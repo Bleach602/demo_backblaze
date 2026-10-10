@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pekekue — Dépôt de candidature</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="app-header">
+    <div class="brand">
+        <span class="logo">☁</span>
+        <h1>Pekekue — Candidatures</h1>
+    </div>
+</header>
+
+<main class="app-main">
+
+    <!-- Messages flash -->
+    <div th:if="${success}" class="message success" th:text="${success}"></div>
+    <div th:if="${error}"   class="message error"   th:text="${error}"></div>
+
+    <!-- ═══════ Formulaire ═══════ -->
+    <section class="card">
+        <h2>Déposer une candidature</h2>
+        <p class="subtitle">Renseignez votre nom et joignez un document (PDF, image, vidéo).</p>
+
+        <form th:action="@{/candidatures}" method="post" enctype="multipart/form-data">
+            <div class="field">
+                <label for="nom">Nom du candidat</label>
+                <input type="text" id="nom" name="nom" required maxlength="100"
+                       placeholder="Ex : Jean Dupont">
+            </div>
+
+            <div class="field">
+                <label for="fichier">Document (PDF, image, vidéo — 100 Mo max)</label>
+                <input type="file" id="fichier" name="fichier" required
+                       accept="application/pdf,image/*,video/*">
+            </div>
+
+            <button type="submit" class="btn-primary">Envoyer la candidature</button>
+        </form>
+    </section>
+
+    <!-- ═══════ Liste ═══════ -->
+    <section class="card">
+        <h2>Candidatures reçues</h2>
+
+        <div th:if="${#lists.isEmpty(candidatures)}" class="empty-state">
+            <span>📭</span>
+            <p>Aucune candidature pour le moment.</p>
+        </div>
+
+        <table th:if="${!#lists.isEmpty(candidatures)}" class="data-table">
+            <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Document</th>
+                <th>Taille</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${candidatures}">
+                <td th:text="${c.nom}"></td>
+                <td th:text="${c.nomFichier}"></td>
+                <td th:text="${#numbers.formatDecimal(c.taille / 1024.0, 1, 1)} + ' Ko'"></td>
+                <td th:text="${#temporals.format(c.dateDepot, 'dd/MM/yyyy HH:mm')}"></td>
+                <td class="actions-cell">
+                    <a th:href="@{'/candidatures/' + ${c.id} + '/voir'}" target="_blank">Voir</a>
+                    <a th:href="@{'/candidatures/' + ${c.id} + '/telecharger'}">Télécharger</a>
+                    <form th:action="@{'/candidatures/' + ${c.id} + '/supprimer'}"
+                          method="post"
+                          onsubmit="return confirm('Supprimer cette candidature ?');">
+                        <button type="submit" class="link-danger">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+</body>
+</html>
